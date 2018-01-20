@@ -1,0 +1,44 @@
+#!/usr/bin/perl
+##################################
+# Brainfuck / Ook-like Translator
+# by Armok628 on esolangs.org
+##################################
+# Execute with argument "--to-bf" to translate from an Ook-like language (such as Ook or Blub) to Brainfuck.
+# Execute with any other argument to translate from Brainfuck to an Ook-like language.
+#
+# This script takes input from stdin, so use a pipeline to give it data
+# e.g. `cat source.bf | ./script Ook`
+
+$ARGV[0] or die "Missing argument\n";
+my %glossary = (
+	'>' => '.?',
+	'<' => '?.',
+	'+' => '..',
+	'-' => '!!',
+	'.' => '!.',
+	',' => '.!',
+	'[' => '!?',
+	']' => '?!',
+);
+if ($ARGV[0] eq '--to-bf') {
+	%glossary = reverse %glossary; # Switch keys and values
+	for (<STDIN>) {
+		chomp $_;
+		$_=' '.$_;
+		$_=~s/[^ .!?]+([.!?])/$1/g; # Replace words with punctuation
+		$_=~s/(.) (.)/$1$2 /g; # Group pairs of letters together
+		print $glossary{$_} for (split / /,$_); # For each pair, print the translation
+		print "\n";
+	}
+} else {
+	my $lang=$ARGV[0];
+	for (<STDIN>) {
+		chomp $_;
+		for (split //, $_) {
+			$_=$glossary{$_}; # Replace symbols with punctuation
+			$_=~s/(.)/$lang\1 /g; # Add language name before punctuation
+			print $_;
+		}
+		print "\n";
+	}
+}
